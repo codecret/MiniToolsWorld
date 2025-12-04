@@ -1,3 +1,55 @@
+## Tools – PDF & Image to WebP
+
+This is a small tools site built with **Next.js 16 App Router**, **TypeScript**, and **Tailwind**, providing fast, fully client-side utilities for converting files to **WebP**.
+
+### Available tools
+
+- **PDF → WebP** (`/`)
+
+  - Upload a single PDF.
+  - Each page is rendered in the browser using `pdfjs-dist`.
+  - You get a list of **compressed WebP images**, one per page, with previews and individual download links.
+  - All processing happens locally in your browser; the PDF is never uploaded to a server.
+
+- **Images → WebP** (`/image-to-webp`)
+  - Upload multiple **JPG / PNG / WebP** images at once.
+  - Each image is downscaled (max dimension 1600px) and compressed to WebP.
+  - Outputs are named sequentially: `1.webp`, `2.webp`, `3.webp`, ...
+  - You can:
+    - Download each image individually.
+    - Or **Download all** as a single `.zip` archive (built client-side with `jszip`).
+
+### Tech stack
+
+- **Framework**: Next.js 16 (App Router)
+- **Language**: TypeScript
+- **Styling**: Tailwind CSS (v4)
+- **UI primitives**: Custom light-weight `Button` and `Card` components in a shadcn-style API
+- **PDF rendering**: `pdfjs-dist`
+- **Image optimization**: HTML Canvas API in the browser
+- **Zip archive**: `jszip`
+
+### Getting started
+
+```bash
+cd /Users/y7gn/Downloads/pdf-webp
+
+# Install dependencies
+npm install
+
+# Run the dev server
+npm run dev
+```
+
+Then open the URL Next prints (usually `http://localhost:3000` or `http://localhost:3001`).
+
+### Notes
+
+- All heavy work (PDF page rendering, image compression, zipping) is done **client-side**.
+- This means:
+  - No file contents are sent to any backend.
+  - Performance depends on the user’s machine and browser.
+
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
 ## Getting Started
