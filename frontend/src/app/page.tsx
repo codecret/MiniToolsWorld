@@ -3,19 +3,17 @@ export default function Home() {
     <div className="space-y-8">
       <section className="space-y-3">
         <p className="text-xs font-medium uppercase tracking-[0.2em] text-neutral-500">
-          Tools
+          PDF Image Extractor
         </p>
         <h1 className="text-3xl font-semibold tracking-tight sm:text-4xl">
-          PDF utilities that run in your browser.
+          Extract PDF Images
         </h1>
         <p className="max-w-2xl text-sm text-neutral-600 dark:text-neutral-400">
-          Start with the PDF → WebP converter. Drop in a PDF and download each
-          page as a compressed WebP image. No uploads, no waiting, just fast
-          processing on your device.
+          Easy to use app to extract all embedded images from PDF files. All
+          images are automatically converted to WebP format for easy download.
         </p>
       </section>
       <section>
-        {/* @ts-expect-error Server Component importing client component is allowed in Next App Router */}
         <PdfToWebpTool />
       </section>
     </div>

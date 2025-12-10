@@ -14,8 +14,8 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Tools – PDF to WebP",
-  description: "Convert PDF pages to compressed WebP images in your browser.",
+  title: "Extract PDF Images",
+  description: "Easy to use app to extract all embedded images from PDF files.",
 };
 
 export default function RootLayout({
@@ -49,7 +49,7 @@ export default function RootLayout({
                   href="/"
                   className="rounded-full px-3 py-1 hover:bg-neutral-100 dark:hover:bg-neutral-900"
                 >
-                  PDF → WebP
+                  Extract PDF Images
                 </Link>
                 <Link
                   href="/image-to-webp"

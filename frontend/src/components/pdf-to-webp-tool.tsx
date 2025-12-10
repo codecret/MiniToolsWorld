@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
 import { useCallback, useState } from "react";
-import * as pdfjsLib from "pdfjs-dist";
+import JSZip from "jszip/dist/jszip.min.js";
 import { Button } from "./ui/button";
 import {
   Card,
@@ -11,12 +11,9 @@ import {
   CardTitle,
 } from "./ui/card";
 
-// Configure pdf.js worker (served from the pdfjs-dist package)
-// @ts-expect-error pdfjs worker configuration
-pdfjsLib.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@4.8.69/build/pdf.worker.mjs`;
-
 type GeneratedImage = {
   pageNumber: number;
+  imageIndex?: number;
   url: string;
 };
 
@@ -37,41 +34,35 @@ export function PdfToWebpTool() {
     setImages([]);
 
     try {
-      const arrayBuffer = await file.arrayBuffer();
+      const formData = new FormData();
+      formData.append("file", file);
 
-      // @ts-expect-error getDocument types are not perfect in pdfjs-dist
-      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-      const generated: GeneratedImage[] = [];
+      const response = await fetch("/api/pdf/extract-images", {
+        method: "POST",
+        body: formData,
+      });
 
-      for (let pageNumber = 1; pageNumber <= pdf.numPages; pageNumber++) {
-        // eslint-disable-next-line no-await-in-loop
-        const page = await pdf.getPage(pageNumber);
-        const viewport = page.getViewport({ scale: 2 }); // higher scale = better quality
-
-        const canvas = document.createElement("canvas");
-        const context = canvas.getContext("2d");
-        if (!context) {
-          throw new Error("Could not create canvas context.");
-        }
-
-        canvas.width = viewport.width;
-        canvas.height = viewport.height;
-
-        // eslint-disable-next-line no-await-in-loop
-        await page.render({ canvasContext: context, viewport }).promise;
-
-        const dataUrl = canvas.toDataURL("image/webp", 0.8); // 0.8 = quality
-
-        generated.push({
-          pageNumber,
-          url: dataUrl,
-        });
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        throw new Error(errorData.error || "Failed to process PDF");
       }
 
-      setImages(generated);
+      const data = await response.json();
+
+      if (data.success && data.images) {
+        setImages(data.images);
+      } else {
+        throw new Error("Invalid response from server");
+      }
     } catch (err) {
       console.error(err);
-      setError("Something went wrong while processing your PDF.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Something went wrong while processing your PDF."
+      );
     } finally {
       setIsProcessing(false);
     }
@@ -82,12 +73,42 @@ export function PdfToWebpTool() {
     void handleFileChange(file);
   };
 
+  const handleDownloadAll = async () => {
+    if (images.length === 0) return;
+
+    const zip = new JSZip();
+
+    for (const img of images) {
+      const [header, data] = img.url.split(",");
+      if (!data) continue;
+
+      const isBase64 = /;base64$/i.test(header);
+
+      if (isBase64) {
+        const fileName = `page-${img.pageNumber}-image-${
+          img.imageIndex || img.pageNumber
+        }.webp`;
+        zip.file(fileName, data, { base64: true });
+      }
+    }
+
+    const blob = await zip.generateAsync({ type: "blob" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "extracted-pdf-images.zip";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+  };
+
   return (
     <Card className="w-full max-w-3xl">
       <CardHeader>
-        <CardTitle>PDF → WebP Images</CardTitle>
+        <CardTitle>Extract PDF Images</CardTitle>
         <CardDescription>
-          Upload a PDF and get each page back as a compressed WebP image.
+          Easy to use app to extract all embedded images from PDF files.
         </CardDescription>
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
@@ -102,8 +123,8 @@ export function PdfToWebpTool() {
             className="block w-full cursor-pointer rounded-md border border-dashed border-neutral-300 bg-neutral-50 px-4 py-6 text-sm text-neutral-700 shadow-sm transition hover:border-neutral-400 hover:bg-neutral-100 dark:border-neutral-700 dark:bg-neutral-900 dark:text-neutral-200 dark:hover:border-neutral-500"
           />
           <p className="text-xs text-neutral-500 dark:text-neutral-400">
-            We process the PDF in your browser. Your file never leaves your
-            device.
+            Extract embedded images from your PDF. All images are converted to
+            WebP format for download.
           </p>
         </div>
 
@@ -121,9 +142,12 @@ export function PdfToWebpTool() {
           <div className="mt-4 space-y-3">
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                Generated images
+                Extracted images ({images.length})
               </p>
               <div className="flex gap-2">
+                <Button variant="outline" size="sm" onClick={handleDownloadAll}>
+                  Download all (.zip)
+                </Button>
                 <Button
                   variant="outline"
                   size="sm"
@@ -138,22 +162,29 @@ export function PdfToWebpTool() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2">
-              {images.map((img) => (
+              {images.map((img, idx) => (
                 <div
-                  key={img.pageNumber}
+                  key={img.imageIndex || `${img.pageNumber}-${idx}`}
                   className="overflow-hidden rounded-lg border border-neutral-200 bg-neutral-50 dark:border-neutral-800 dark:bg-neutral-900"
                 >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={img.url}
-                    alt={`Page ${img.pageNumber}`}
+                    alt={`Image from page ${img.pageNumber}${
+                      img.imageIndex ? ` (${img.imageIndex})` : ""
+                    }`}
                     className="h-64 w-full object-contain bg-neutral-100 dark:bg-neutral-900"
                   />
                   <div className="flex items-center justify-between px-3 py-2 text-xs text-neutral-600 dark:text-neutral-300">
-                    <span>Page {img.pageNumber}</span>
+                    <span>
+                      Page {img.pageNumber}
+                      {img.imageIndex ? ` • Image ${img.imageIndex}` : ""}
+                    </span>
                     <a
                       href={img.url}
-                      download={`page-${img.pageNumber}.webp`}
+                      download={`page-${img.pageNumber}-image-${
+                        img.imageIndex || img.pageNumber
+                      }.webp`}
                       className="font-medium text-blue-600 hover:underline dark:text-blue-400"
                     >
                       Download
@@ -168,5 +199,3 @@ export function PdfToWebpTool() {
     </Card>
   );
 }
-
-

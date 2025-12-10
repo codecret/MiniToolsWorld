@@ -1,88 +1,77 @@
-## Tools – PDF & Image to WebP
+# MiniToolsWorld
 
-This is a small tools site built with **Next.js 16 App Router**, **TypeScript**, and **Tailwind**, providing fast, fully client-side utilities for converting files to **WebP**.
+A full-stack application for PDF and image processing tools, with a Next.js frontend and Python FastAPI backend.
 
-### Available tools
+## Project Structure
 
-- **PDF → WebP** (`/`)
+```
+MiniToolsWorld/
+├── frontend/          # Next.js 16 App Router application
+├── backend/           # Python FastAPI backend service
+└── README.md          # This file
+```
 
-  - Upload a single PDF.
-  - Each page is rendered in the browser using `pdfjs-dist`.
-  - You get a list of **compressed WebP images**, one per page, with previews and individual download links.
-  - All processing happens locally in your browser; the PDF is never uploaded to a server.
+## Frontend
 
-- **Images → WebP** (`/image-to-webp`)
-  - Upload multiple **JPG / PNG / WebP** images at once.
-  - Each image is downscaled (max dimension 1600px) and compressed to WebP.
-  - Outputs are named sequentially: `1.webp`, `2.webp`, `3.webp`, ...
-  - You can:
-    - Download each image individually.
-    - Or **Download all** as a single `.zip` archive (built client-side with `jszip`).
+The frontend is a Next.js 16 application that provides web-based tools for PDF and image processing.
 
-### Tech stack
+See [frontend/README.md](./frontend/README.md) for frontend-specific documentation.
 
-- **Framework**: Next.js 16 (App Router)
-- **Language**: TypeScript
-- **Styling**: Tailwind CSS (v4)
-- **UI primitives**: Custom light-weight `Button` and `Card` components in a shadcn-style API
-- **PDF rendering**: `pdfjs-dist`
-- **Image optimization**: HTML Canvas API in the browser
-- **Zip archive**: `jszip`
-
-### Getting started
+### Quick Start (Frontend)
 
 ```bash
-cd /Users/y7gn/Downloads/pdf-webp
-
-# Install dependencies
+cd frontend
 npm install
-
-# Run the dev server
 npm run dev
 ```
 
-Then open the URL Next prints (usually `http://localhost:3000` or `http://localhost:3001`).
+## Backend
 
-### Notes
+The backend is a Python FastAPI service that handles PDF image extraction.
 
-- All heavy work (PDF page rendering, image compression, zipping) is done **client-side**.
-- This means:
-  - No file contents are sent to any backend.
-  - Performance depends on the user’s machine and browser.
+See [backend/README.md](./backend/README.md) for backend-specific documentation.
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
-
-## Getting Started
-
-First, run the development server:
+### Quick Start (Backend)
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd backend
+python3 -m venv venv
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Development
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Running Both Services
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Start the Python backend:**
 
-## Learn More
+   ```bash
+   cd backend
+   python main.py
+   ```
 
-To learn more about Next.js, take a look at the following resources:
+   Backend runs on `http://localhost:8000`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+2. **Start the Next.js frontend:**
+   ```bash
+   cd frontend
+   npm run dev
+   ```
+   Frontend runs on `http://localhost:3000`
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### Environment Variables
 
-## Deploy on Vercel
+The frontend API route (`frontend/src/app/api/pdf/extract-images/route.ts`) uses the `PYTHON_BACKEND_URL` environment variable to connect to the backend. By default, it's set to `http://localhost:8000`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+To customize, create a `.env.local` file in the `frontend` directory:
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```env
+PYTHON_BACKEND_URL=http://localhost:8000
+```
+
+## Features
+
+- **PDF Image Extraction**: Extract embedded images from PDF files and convert them to WebP format
+- **Image → WebP**: Convert multiple images to WebP format with compression
