@@ -5,6 +5,7 @@ Extracts images from PDF files and converts them to WebP format
 import os
 import tempfile
 import base64
+import time
 from pathlib import Path
 from typing import List, Dict
 import uvicorn
@@ -153,9 +154,17 @@ async def extract_images(file: UploadFile = File(...)):
             status_code = 400 if "No embedded images found" in error_message else 500
             raise HTTPException(status_code=status_code, detail=error_message)
         finally:
-            # Clean up temporary file
-            if os.path.exists(tmp_file_path):
-                os.unlink(tmp_file_path)
+            # Clean up temporary file (Windows may keep handle briefly; exists/unlink can raise PermissionError)
+            try:
+                for _ in range(5):
+                    try:
+                        if os.path.exists(tmp_file_path):
+                            os.unlink(tmp_file_path)
+                        break
+                    except PermissionError:
+                        time.sleep(0.15)
+            except PermissionError:
+                pass
 
 
 @app.get("/health")
@@ -215,8 +224,16 @@ async def debug_pdf(file: UploadFile = File(...)):
         except Exception as e:
             raise HTTPException(status_code=500, detail=str(e))
         finally:
-            if os.path.exists(tmp_file_path):
-                os.unlink(tmp_file_path)
+            try:
+                for _ in range(5):
+                    try:
+                        if os.path.exists(tmp_file_path):
+                            os.unlink(tmp_file_path)
+                        break
+                    except PermissionError:
+                        time.sleep(0.15)
+            except PermissionError:
+                pass
 
 
 if __name__ == "__main__":

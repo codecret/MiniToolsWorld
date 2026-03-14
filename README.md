@@ -2,6 +2,49 @@
 
 A full-stack application for PDF and image processing tools, with a Next.js frontend and Python FastAPI backend.
 
+## How to run
+
+Run **both** the backend and frontend (in separate terminals). The frontend talks to the backend for PDF image extraction.
+
+### 1. Backend (Python)
+
+```bash
+cd backend
+python -m venv venv
+```
+
+**Windows (PowerShell or CMD):**
+
+```bash
+venv\Scripts\activate
+pip install -r requirements.txt
+python main.py
+```
+
+**macOS / Linux:**
+
+```bash
+source venv/bin/activate
+pip install -r requirements.txt
+python main.py
+```
+
+Backend runs at **http://localhost:8000**
+
+### 2. Frontend (Next.js)
+
+In a **second terminal**:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+
+Frontend runs at **http://localhost:3000**. Open this in your browser.
+
+---
+
 ## Project Structure
 
 ```
@@ -13,55 +56,13 @@ MiniToolsWorld/
 
 ## Frontend
 
-The frontend is a Next.js 16 application that provides web-based tools for PDF and image processing.
-
-See [frontend/README.md](./frontend/README.md) for frontend-specific documentation.
-
-### Quick Start (Frontend)
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
+Next.js 16 app for PDF and image tools. See [frontend/README.md](./frontend/README.md) for more.
 
 ## Backend
 
-The backend is a Python FastAPI service that handles PDF image extraction.
+Python FastAPI service for PDF image extraction. See [backend/README.md](./backend/README.md) for more.
 
-See [backend/README.md](./backend/README.md) for backend-specific documentation.
-
-### Quick Start (Backend)
-
-```bash
-cd backend
-python3 -m venv venv
-source venv/bin/activate
-pip install -r requirements.txt
-python main.py
-```
-
-## Development
-
-### Running Both Services
-
-1. **Start the Python backend:**
-
-   ```bash
-   cd backend
-   python main.py
-   ```
-
-   Backend runs on `http://localhost:8000`
-
-2. **Start the Next.js frontend:**
-   ```bash
-   cd frontend
-   npm run dev
-   ```
-   Frontend runs on `http://localhost:3000`
-
-### Environment Variables
+## Environment Variables
 
 The frontend API route (`frontend/src/app/api/pdf/extract-images/route.ts`) uses the `PYTHON_BACKEND_URL` environment variable to connect to the backend. By default, it's set to `http://localhost:8000`.
 
